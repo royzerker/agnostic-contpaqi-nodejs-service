@@ -1,0 +1,23 @@
+{
+	"files.exclude": {
+		"**/dist": true,
+		"**/node_modules": true
+	},
+	"npm.packageManager": "npm",
+	"prettier.requireConfig": true,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll": "explicit",
+		"source.fixAll.eslint": "explicit",
+		"source.organizeImports": "explicit"
+	},
+	"[dotenv]": {
+		"editor.defaultFormatter": "foxundermoon.shell-format"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"cSpell.words": ["firstname", "lastname", "Stackable"]
+}
