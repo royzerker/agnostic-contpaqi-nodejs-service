@@ -7,8 +7,8 @@ import { EnvConfig } from './interfaces';
 
 @Injectable()
 export class ConfigService {
-  private readonly logger = new Logger(ConfigService.name);
-  private readonly envConfig: EnvConfig = {};
+  readonly #_logger = new Logger(ConfigService.name);
+  readonly #_envConfig: EnvConfig = {};
 
   constructor(@Inject(CONFIG_OPTIONS) private options: Record<string, any>) {
     const filePath = `${process.env.NODE_ENV || 'development'}.env`;
@@ -18,17 +18,17 @@ export class ConfigService {
       filePath,
     );
 
-    this.logger.log(`Env file path: ${envFile}`);
+    this.#_logger.log(`Env file path: ${envFile}`);
 
-    this.envConfig = dotenv.parse(fs.readFileSync(envFile));
+    this.#_envConfig = dotenv.parse(fs.readFileSync(envFile));
 
-    this.logger.log(
-      `Env variables loaded: ${Object.keys(this.envConfig).length}`,
+    this.#_logger.log(
+      `Env variables loaded: ${Object.keys(this.#_envConfig).length}`,
     );
   }
 
   get(key: string): string {
-    const value = this.envConfig[key];
+    const value = this.#_envConfig[key];
 
     return String(value);
   }
