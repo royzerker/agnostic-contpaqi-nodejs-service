@@ -9,6 +9,7 @@ import { VideoModule } from './features/video/video.module';
 import { ConfigModule } from './modules/infrastructure/config/config.module';
 import { PrismaModule } from './modules/infrastructure/prisma/prisma.module';
 import { RedisModule } from './modules/infrastructure/redis';
+import { SyncUserModule } from './tools/sync-user/sync-user.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { RedisModule } from './modules/infrastructure/redis';
     VideoModule,
     AuthModule,
     UserModule,
+    SyncUserModule,
   ],
   controllers: [],
   providers: [
