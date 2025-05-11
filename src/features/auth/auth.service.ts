@@ -10,7 +10,7 @@ import * as crypto from 'crypto';
 import { BaseUserDto } from 'src/core/dtos';
 import { AUTH_STORAGE } from 'src/core/services/auth-storage/auth-storage.constants';
 import { AuthStorageType } from 'src/core/services/auth-storage/auth-storage.type';
-import { RedisService } from 'src/modules/redis';
+import { RedisService } from 'src/modules/infrastructure/redis';
 import { AuthDto, AuthResponseDto } from './dto/auth.dto';
 
 type Payload = {

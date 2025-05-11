@@ -21,7 +21,7 @@ export class UpserVideoDto {
 export class UpserVideoResponseDto {
   @IsString()
   @ApiPropertyOptional()
-  title: string;
+  title?: string;
 
   @IsString()
   @ApiProperty()

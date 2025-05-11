@@ -43,7 +43,7 @@ export class VideoService {
       });
 
       return new UpserVideoResponseDto({
-        title: video.title,
+        title: video?.title ?? undefined,
         iframeUrl: video.iframeUrl,
         updatedAt: video.updatedAt.valueOf(),
         createdAt: video.createdAt.valueOf(),
