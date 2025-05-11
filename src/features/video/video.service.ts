@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Video } from '@prisma/client';
 import { PrismaService } from 'src/modules/infrastructure/prisma/prisma.service';
-import { CreateVideoDto } from './dtos/create-video.dto';
+import {
+  UpserVideoDto,
+  UpserVideoResponseDto,
+  VideoIdDto,
+} from './dtos/upsert-video.dto';
+import { VIDEO_ID } from './video.constants';
 
 @Injectable()
 export class VideoService {
@@ -13,12 +17,37 @@ export class VideoService {
     this.#_prismaClient = prisma;
   }
 
-  async create(data: CreateVideoDto): Promise<Video> {
+  async upsert(
+    videoIdDto: VideoIdDto,
+    data: UpserVideoDto,
+  ): Promise<UpserVideoResponseDto> {
     this.#_logger.log(`inside ${this.constructor.name} create method`);
 
+    const ID = VIDEO_ID || videoIdDto.id;
+
     try {
-      const video = await this.#_prismaClient.video.create({ data });
-      return video;
+      const video = await this.#_prismaClient.video.upsert({
+        where: { id: ID },
+        update: {
+          title: data?.title,
+          iframeUrl: data.iframeUrl,
+          updatedAt: new Date(),
+        },
+        create: {
+          id: ID,
+          title: data?.title,
+          iframeUrl: data.iframeUrl,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+
+      return new UpserVideoResponseDto({
+        title: video.title,
+        iframeUrl: video.iframeUrl,
+        updatedAt: video.updatedAt.valueOf(),
+        createdAt: video.createdAt.valueOf(),
+      });
     } catch (err) {
       this.#_logger.error(`Error creating video: ${err.message}`);
       throw err;

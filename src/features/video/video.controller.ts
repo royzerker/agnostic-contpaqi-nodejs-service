@@ -1,14 +1,20 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { Video } from '@prisma/client';
-import { CreateVideoDto } from './dtos/create-video.dto';
+import { Body, Controller, Param, Put } from '@nestjs/common';
+import {
+  UpserVideoDto,
+  UpserVideoResponseDto,
+  VideoIdDto,
+} from './dtos/upsert-video.dto';
 import { VideoService } from './video.service';
 
 @Controller('videos')
 export class VideoController {
   constructor(private readonly videoService: VideoService) {}
 
-  @Post()
-  async create(@Body() createVideoDto: CreateVideoDto): Promise<Video> {
-    return await this.videoService.create(createVideoDto);
+  @Put(':id')
+  async create(
+    @Param() videoIdDto: VideoIdDto,
+    @Body() upserVideoDto: UpserVideoDto,
+  ): Promise<UpserVideoResponseDto> {
+    return await this.videoService.upsert(videoIdDto, upserVideoDto);
   }
 }
