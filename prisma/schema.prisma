@@ -19,6 +19,7 @@ model User {
   phonePrefix String?
   firstLogin Boolean? @default(false)
   firstLoginAt DateTime?
+  countLogins Int? @default(0)
   roleId    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
