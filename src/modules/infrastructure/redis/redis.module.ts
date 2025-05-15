@@ -16,7 +16,8 @@ export class RedisModule {
             const redisOptions: RedisOptions = {
               host: configService.getAndCheck('REDIS_HOST'),
               port: configService.getNumberAndCheck('REDIS_PORT'),
-              // password: configService.getAndCheck('REDIS_PASSWORD'),
+              username: configService.getAndCheck('REDIS_USERNAME'),
+              password: configService.getAndCheck('REDIS_PASSWORD'),
               // maxRetriesPerRequest: 2,
               // tls: {}
             };
