@@ -1,0 +1,121 @@
+#!/bin/bash
+
+set -e  # Salir si hay un error
+
+echo "Actualizando paquetes..."
+sudo apt update && sudo apt upgrade -y
+
+echo "Instalando Zsh..."
+sudo apt install -y zsh curl git
+
+echo "Cambiando shell por defecto a Zsh para el usuario actual..."
+chsh -s $(which zsh)
+
+echo "Instalando Oh My Zsh para una mejor experiencia..."
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+echo "Instalando Certbot y dependencias para Nginx..."
+sudo apt install -y certbot python3-certbot-nginx
+
+echo "Instalando Nginx..."
+sudo apt install -y nginx
+
+echo "Habilitando Nginx para que inicie con el sistema..."
+sudo systemctl enable nginx
+sudo systemctl start nginx
+
+echo "Instalando Node Version Manager (NVM)..."
+export NVM_DIR="$HOME/.nvm"
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+echo "Agregando NVM al shell actual..."
+export NVM_DIR="$HOME/.nvm"
+source "$NVM_DIR/nvm.sh"
+
+echo "Instalando Node.js con NVM (última LTS)..."
+nvm install --lts
+
+echo "Instalando PM2 globalmente..."
+npm install -g pm2
+
+echo "Configurando PM2 para que inicie al reiniciar el sistema..."
+pm2 startup systemd
+
+sudo certbot --nginx -d tu-dominio.com -d www.tu-dominio.com
+
+
+#################################################################
+
+#!/bin/bash
+
+set -e
+
+# Actualizar e instalar dependencias
+echo "Actualizando paquetes..."
+sudo apt update && sudo apt upgrade -y
+
+echo "Instalando Zsh, curl y git..."
+sudo apt install -y zsh curl git
+
+echo "Cambiando shell por defecto a Zsh para el usuario actual..."
+chsh -s $(which zsh)
+
+echo "Instalando Oh My Zsh para mejor experiencia en Zsh..."
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+echo "Instalando Certbot y dependencias para Nginx..."
+sudo apt install -y certbot python3-certbot-nginx
+
+echo "Instalando Nginx..."
+sudo apt install -y nginx
+
+echo "Habilitando y arrancando Nginx..."
+sudo systemctl enable nginx
+sudo systemctl start nginx
+
+# Configuración base Nginx para una app Node.js en /var/www/miapp
+echo "Creando configuración base de Nginx para Node.js app..."
+
+APP_DOMAIN="tu-dominio.com"
+APP_ROOT="/var/www/miapp"
+
+sudo mkdir -p $APP_ROOT
+
+sudo tee /etc/nginx/sites-available/$APP_DOMAIN > /dev/null <<EOF
+server {
+    listen 80;
+    server_name $APP_DOMAIN www.$APP_DOMAIN;
+
+    location / {
+        proxy_pass http://localhost:3000;  # Puerto donde corre tu app Node.js
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+    }
+
+    # Opcional: acceso a logs para debug
+    access_log /var/log/nginx/$APP_DOMAIN.access.log;
+    error_log /var/log/nginx/$APP_DOMAIN.error.log;
+}
+EOF
+
+echo "Enlazando configuración y probando Nginx..."
+sudo ln -s /etc/nginx/sites-available/$APP_DOMAIN /etc/nginx/sites-enabled/
+
+sudo nginx -t
+sudo systemctl reload nginx
+
+echo "Instalando NVM (Node Version Manager)..."
+export NVM_DIR="$HOME/.nvm"
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+export NVM_DIR="$HOME/.nvm"
+source "$NVM_DIR/nvm.sh"
+
+echo "Instalando Node.js LTS..."
+nvm install --lts
+nvm use --lts
+
+echo "Instaland

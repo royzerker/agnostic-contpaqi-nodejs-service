@@ -9,22 +9,25 @@ import { EnvConfig } from './interfaces';
 export class ConfigService {
   readonly #_logger = new Logger(ConfigService.name);
   readonly #_envConfig: EnvConfig = {};
-
   constructor(@Inject(CONFIG_OPTIONS) private options: Record<string, any>) {
-    const filePath = `${process.env.NODE_ENV || 'development'}.env`;
+    const env = process.env.NODE_ENV || 'development';
+    const fileName = `${env}.env`;
 
-    const envFile = path.resolve(
-      `${process.cwd()}/${this.options.folder}`,
-      filePath,
-    );
+    const folder = this.options.folder || 'config';
+
+    const envFile = path.resolve(process.cwd(), folder, fileName);
 
     this.#_logger.log(`Env file path: ${envFile}`);
 
-    this.#_envConfig = dotenv.parse(fs.readFileSync(envFile));
-
-    this.#_logger.log(
-      `Env variables loaded: ${Object.keys(this.#_envConfig).length}`,
-    );
+    if (!fs.existsSync(envFile)) {
+      this.#_logger.error(`Env file not found: ${envFile}`);
+      this.#_envConfig = {};
+    } else {
+      this.#_envConfig = dotenv.parse(fs.readFileSync(envFile));
+      this.#_logger.log(
+        `Env variables loaded: ${Object.keys(this.#_envConfig).length}`,
+      );
+    }
   }
 
   get(key: string): string {
