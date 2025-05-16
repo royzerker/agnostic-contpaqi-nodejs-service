@@ -11,15 +11,18 @@ import { BaseUserDto } from 'src/core/dtos';
 import { AUTH_STORAGE } from 'src/core/services/auth-storage/auth-storage.constants';
 import { AuthStorageType } from 'src/core/services/auth-storage/auth-storage.type';
 import { RedisService } from 'src/modules/infrastructure/redis';
+import { UserDto } from '../user/dtos/user.dto';
+import { UserService } from '../user/user.service';
 import { AuthDto, AuthResponseDto } from './dto/auth.dto';
+import { RegisterDto } from './dto/register.dto';
 
 type Payload = {
   id: string;
   email: string;
   fullName: string;
+  firstName: string;
+  lastName: string;
   role: string;
-  country: string;
-  active: boolean;
 };
 
 @Injectable()
@@ -29,10 +32,33 @@ export class AuthService {
   constructor(
     @Inject(AUTH_STORAGE)
     private asyncLocalStorage: AsyncLocalStorage<AuthStorageType>,
-    // private readonly userService: UserService,
+    private readonly userService: UserService,
     private jwtService: JwtService,
     private redisService: RedisService,
   ) {}
+
+  async signUp(
+    user: RegisterDto,
+    headers: Record<string, string>,
+  ): Promise<void> {
+    this.#_logger.log(`inside ${this.constructor.name}.${this.signUp.name}`);
+
+    this.#_logger.log(`Headers: ${JSON.stringify(headers)}`);
+    const localStorage = this.asyncLocalStorage.getStore?.();
+
+    this.#_logger.log(
+      `LocalStorage: ${JSON.stringify(localStorage?.authRequestHeaders)}`,
+    );
+
+    await this.userService.create(
+      new UserDto({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        fullName: `${user.firstName} ${user.lastName}`,
+        email: user.email.toLocaleLowerCase(),
+      }),
+    );
+  }
 
   async signIn(
     { email }: AuthDto,
@@ -47,70 +73,72 @@ export class AuthService {
       `LocalStorage: ${JSON.stringify(localStorage?.authRequestHeaders)}`,
     );
 
-    // const user = await this.userService.validateEmail(
-    //   email.toLocaleLowerCase(),
-    // );
+    const user = await this.userService.validateEmail(
+      email.toLocaleLowerCase(),
+    );
 
-    // if (!user) {
-    //   throw new UnauthorizedException(`El email ${email} no existe`);
-    // }
+    if (!user) {
+      throw new UnauthorizedException(`El email ${email} no existe`);
+    }
 
-    // const id = user._id.toHexString();
+    const id = user.id;
+    this.#_logger.log(`User ID: ${id}`);
 
-    // /**
-    //  * Payload
-    //  */
-    // const payload = <Payload>{
-    //   id,
-    //   email: user.email,
-    //   fullName: user.fullName,
-    //   role: user.role,
-    //   country: user.countryId,
-    //   active: user.active,
-    // };
+    /**
+     * Payload
+     */
+    const payload = <Payload>{
+      id,
+      email: user.email,
+      fullName: user.fullName,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: 'USER',
+    };
 
     /**
      * Create token
      */
-    // const access_token = await this.jwtService.signAsync(payload);
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '7d',
+    });
 
     /**
      * Hash token
      */
-    // const hashedToken = this.#_hashToken(access_token);
+    const hashedToken = this.#_hashToken(accessToken);
 
-    // const redisKey = `auth:${id}:tokens`;
-
-    // const tokens = await this.redisService.lrange(redisKey, 0, -1);
-
-    // this.#_logger.log(`Tokens: ${tokens}`);
-
-    // if (tokens.length > 5) {
-    //   throw new UnauthorizedException(
-    //     `Ya has iniciado sesión en el máximo de dispositivos permitidos. Cierra sesión en uno de tus dispositivos para continuar.`,
-    //   );
-    // }
+    const redisKey = `auth:${id}:tokens`;
 
     /**
-     * Agregar token a la lista de tokens
+     *  Agregar el nuevo token al principio de la lista
      */
-    // await this.redisService.lpush(redisKey, hashedToken); // Agregar token a la lista de tokens
-    // await this.redisService.ltrim(redisKey, 0, 1); // Solo se permiten 2 tokens por usuario
-    // await this.redisService.expire(redisKey, 7 * 24 * 60 * 60); // Expira en 7 días
+    await this.redisService.lpush(redisKey, hashedToken);
 
-    // /**
-    //  * Actualizar el estado de login
-    //  */
-    // // await this.userService.updateLogin(id);
+    /**
+     *  Mantener solo los 5 más recientes (elimina los más antiguos)
+     */
+    await this.redisService.ltrim(redisKey, 0, 4);
 
-    // return new AuthResponseDto({
-    //   id: user._id.toHexString(),
-    //   email: user.email,
-    //   fullName: user.fullName,
-    //   role: user.role,
-    //   access_token,
-    // });
-    return new AuthResponseDto({});
+    /**
+     * Establecer tiempo de expiración de 7 días
+     */
+    await this.redisService.expire(redisKey, 7 * 24 * 60 * 60);
+
+    /**
+     * Actualizar el estado de login
+     */
+    await this.userService.updateLogin(id);
+
+    return new AuthResponseDto({
+      id: user.id,
+      email: user.email!,
+      fullName: user.fullName!,
+      firstName: user.firstName!,
+      lastName: user.lastName!,
+      roleId: 'USER',
+      accessToken,
+    });
   }
 
   async signOut(userId: string, token: string): Promise<void> {
@@ -147,24 +175,24 @@ export class AuthService {
   }
 
   async revokedTokens(email: string): Promise<void> {
-    // const user = await this.userService.validateEmail(
-    //   email.toLocaleLowerCase(),
-    // );
-    // if (!user) {
-    //   throw new UnauthorizedException(`El email ${email} no existe`);
-    // }
-    // const id = user._id.toHexString();
-    // const redisKey = `auth:${id}:tokens`;
-    // await this.redisService.del(redisKey);
-    // this.#_logger.log(`Todos los tokens revocados para el usuario ${email}`);
+    const user = await this.userService.validateEmail(
+      email.toLocaleLowerCase(),
+    );
+    if (!user) {
+      throw new UnauthorizedException(`El email ${email} no existe`);
+    }
+    const id = user.id;
+    const redisKey = `auth:${id}:tokens`;
+    await this.redisService.del(redisKey);
+    this.#_logger.log(`Todos los tokens revocados para el usuario ${email}`);
   }
 
   async profile(userId: string): Promise<BaseUserDto> {
-    // const user = await this.userService.findById(userId);
+    const user = await this.userService.findById(userId);
 
-    // if (!user) {
-    //   throw new UnauthorizedException(`El usuario ${userId} no existe`);
-    // }
+    if (!user) {
+      throw new UnauthorizedException(`El usuario ${userId} no existe`);
+    }
 
     return new BaseUserDto({});
   }

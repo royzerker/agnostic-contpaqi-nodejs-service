@@ -1,32 +1,33 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger';
 
 export class AuthDto {
-	@ApiProperty()
-	email: string
+  @ApiProperty()
+  email: string;
 }
 
 export class AuthResponseDto {
-	@ApiProperty()
-	id: string
+  @ApiProperty()
+  id: string;
 
-	@ApiProperty()
-	email: string
+  @ApiProperty()
+  email: string;
 
-	// @ApiProperty()
-	// firstName: string
+  @ApiProperty()
+  firstName: string;
 
-	// @ApiProperty()
-	// lastName: string
-	@ApiProperty()
-	fullName: string
+  @ApiProperty()
+  lastName: string;
 
-	@ApiProperty()
-	role: string
+  @ApiProperty()
+  fullName?: string;
 
-	@ApiProperty()
-	access_token: string
+  @ApiProperty()
+  roleId: string;
 
-	constructor(partial?: Partial<AuthResponseDto>) {
-		Object.assign(this, partial)
-	}
+  @ApiProperty()
+  accessToken: string;
+
+  constructor(partial?: Partial<AuthResponseDto>) {
+    Object.assign(this, partial);
+  }
 }

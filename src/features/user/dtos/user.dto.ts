@@ -41,14 +41,14 @@ export class UserDto {
   @IsOptional()
   @IsString()
   @ApiPropertyOptional()
-  firstName?: string;
+  firstName: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   @ApiPropertyOptional()
-  lastName?: string;
+  lastName: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsBoolean()
   @ApiPropertyOptional()
   firstLogin?: boolean;

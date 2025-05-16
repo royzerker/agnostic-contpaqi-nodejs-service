@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, Logger } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/modules/infrastructure/prisma/prisma.service';
 import { UserDto, UserQueryDto, UserResponseDto } from './dtos/user.dto';
 
@@ -10,6 +10,31 @@ export class UserService {
 
   constructor(prisma: PrismaService) {
     this.#_prismaClient = prisma;
+  }
+
+  async create(user: UserDto): Promise<void> {
+    this.#_logger.log(`inside ${this.constructor.name}.${this.create.name}`);
+
+    const userExists = await this.#_prismaClient.user.findFirst({
+      where: {
+        email: user.email,
+      },
+    });
+
+    if (userExists) {
+      throw new ConflictException(
+        `El usuario con email ${user.email} ya existe`,
+      );
+    }
+
+    await this.#_prismaClient.user.create({
+      data: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        fullName: user?.fullName,
+        email: user.email,
+      },
+    });
   }
 
   async validateEmail(email: string): Promise<User> {
@@ -134,34 +159,26 @@ export class UserService {
     const limit = Math.max(pageSize, 1);
     const skip = (page - 1) * limit;
 
-    const filter: Record<string, any> = {};
-
-    if (term) {
-      filter.fullName = { $regex: term, $options: 'i' };
-    }
+    const searchConditions: Prisma.UserWhereInput = term
+      ? {
+          OR: [
+            { fullName: { contains: term, mode: 'insensitive' } },
+            { firstName: { contains: term, mode: 'insensitive' } },
+            { lastName: { contains: term, mode: 'insensitive' } },
+          ],
+        }
+      : {};
 
     try {
       const [users, totalItems] = await Promise.all([
         this.#_prismaClient.user.findMany({
-          where: {
-            OR: [
-              { fullName: { contains: term, mode: 'insensitive' } },
-              { email: { contains: term, mode: 'insensitive' } },
-              { id: { contains: term, mode: 'insensitive' } },
-            ],
-          },
+          where: searchConditions,
           take: limit,
           skip,
         }),
 
         this.#_prismaClient.user.count({
-          where: {
-            OR: [
-              { fullName: { contains: term, mode: 'insensitive' } },
-              { email: { contains: term, mode: 'insensitive' } },
-              { id: { contains: term, mode: 'insensitive' } },
-            ],
-          },
+          where: searchConditions,
         }),
       ]);
 

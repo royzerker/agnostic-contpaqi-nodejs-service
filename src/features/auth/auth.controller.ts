@@ -18,6 +18,28 @@ import { RevokedTokensDto } from './dto/revoked-tokens.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // @Public()
+  // @Post('register')
+  // @ApiOperation({ summary: 'User Registration' })
+  // @ApiNoContentResponse({
+  //   description: 'User registered successfully',
+  // })
+  // async signUp(
+  //   @Body() dto: RegisterDto,
+  //   @Req() req: FastifyRequest,
+  // ): Promise<void> {
+  //   const headers: Record<string, string> = req.headers as Record<
+  //     string,
+  //     string
+  //   >;
+
+  //   headers['x-forwarded-for'] = req.ip;
+  //   headers['user-agent'] = req.headers['user-agent'] || '';
+  //   headers['accept-language'] = req.headers['accept-language'] || '';
+
+  //   await this.authService.signUp(dto, headers);
+  // }
+
   @Public()
   @Post('login')
   @ApiOperation({ summary: 'User Login' })
@@ -42,7 +64,7 @@ export class AuthController {
   @Post('logout')
   @ApiOperation({ summary: 'User Logout' })
   @ApiOkResponse({ description: 'User logged out' })
-  async signUp(
+  async signOut(
     @Body() { id }: UserIdDto,
     @Token() token: string,
   ): Promise<void> {
