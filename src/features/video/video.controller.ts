@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put } from '@nestjs/common';
 import {
   UpserVideoDto,
   UpserVideoResponseDto,
@@ -16,5 +16,10 @@ export class VideoController {
     @Body() upserVideoDto: UpserVideoDto,
   ): Promise<UpserVideoResponseDto> {
     return await this.videoService.upsert(videoIdDto, upserVideoDto);
+  }
+
+  @Get(':id')
+  async get(@Param('id') id: string): Promise<UpserVideoResponseDto> {
+    return await this.videoService.get(id);
   }
 }

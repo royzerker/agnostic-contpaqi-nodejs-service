@@ -53,4 +53,28 @@ export class VideoService {
       throw err;
     }
   }
+
+  async get(id: string): Promise<UpserVideoResponseDto> {
+    this.#_logger.log(`inside ${this.constructor.name} get method`);
+
+    try {
+      const video = await this.#_prismaClient.video.findUnique({
+        where: { id },
+      });
+
+      if (!video) {
+        throw new Error('Video not found');
+      }
+
+      return new UpserVideoResponseDto({
+        title: video?.title ?? undefined,
+        iframeUrl: video.iframeUrl,
+        updatedAt: video.updatedAt.valueOf(),
+        createdAt: video.createdAt.valueOf(),
+      });
+    } catch (err) {
+      this.#_logger.error(`Error getting video: ${err.message}`);
+      throw err;
+    }
+  }
 }
