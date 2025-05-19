@@ -107,8 +107,10 @@ export class AuthService {
      * Hash token
      */
     const hashedToken = this.#_hashToken(accessToken);
+    this.#_logger.verbose(`Hashed Token: ${hashedToken}`);
 
     const redisKey = `auth:${id}:tokens`;
+    this.#_logger.verbose(`Redis Key: ${redisKey}`);
 
     /**
      *  Agregar el nuevo token al principio de la lista
@@ -142,21 +144,40 @@ export class AuthService {
   }
 
   async signOut(userId: string, token: string): Promise<void> {
+    this.#_logger.log(`inside ${this.constructor.name}.${this.signOut.name}()`);
+
     const redisKey = `auth:${userId}:tokens`;
+    this.#_logger.verbose(`Redis Key: ${redisKey}`);
+
     const hashedToken = this.#_hashToken(token);
+    this.#_logger.verbose(`Hashed Token: ${hashedToken}`);
 
     try {
-      const tokenExists = await this.redisService.lpos(redisKey, hashedToken);
+      const tokenIndex = await this.redisService.lpos(redisKey, hashedToken);
 
-      if (!tokenExists) {
+      this.#_logger.verbose(`Token Index: ${tokenIndex}`);
+
+      if (tokenIndex === null || tokenIndex === undefined) {
         throw new UnauthorizedException(
           `El token proporcionado no se encontró para el usuario ${userId}`,
         );
       }
 
-      await this.redisService.lrem(redisKey, 0, hashedToken);
+      const removedCount = await this.redisService.lrem(
+        redisKey,
+        1,
+        hashedToken,
+      );
 
-      this.#_logger.log(`Sesión cerrada para el usuario ${userId}`);
+      if (removedCount === 0) {
+        this.#_logger.warn(
+          `No se eliminó ningún token para el usuario ${userId}`,
+        );
+      } else {
+        this.#_logger.log(
+          `Sesión cerrada exitosamente para el usuario ${userId}`,
+        );
+      }
     } catch (error) {
       this.#_logger.error(
         `Error cerrando sesión para el usuario ${userId}: ${error.message}`,
