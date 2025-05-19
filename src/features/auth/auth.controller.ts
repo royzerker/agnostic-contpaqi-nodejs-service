@@ -64,11 +64,8 @@ export class AuthController {
   @Post('logout')
   @ApiOperation({ summary: 'User Logout' })
   @ApiOkResponse({ description: 'User logged out' })
-  async signOut(
-    @Body() { id }: UserIdDto,
-    @Token() token: string,
-  ): Promise<void> {
-    await this.authService.signOut(id, token);
+  async signOut(@Body() dto: UserIdDto, @Token() token: string): Promise<void> {
+    await this.authService.signOut(dto.id, token);
   }
 
   @Public()
