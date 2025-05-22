@@ -21,7 +21,7 @@ export class SyncUserBaseStrategyService implements SyncUserService {
         email,
         firstName,
         lastName: lastName ?? '',
-        fullName: `${firstName} ${lastName}`.trim(),
+        fullName: `${firstName} ${lastName ?? ''}`.trim(),
       };
     });
 
