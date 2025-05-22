@@ -1,7 +1,7 @@
 import { cwd } from 'node:process';
 
 export enum SyncUserEnum {
-  BASE = 'BASE',
+  BASE = 'db/base_template.xlsx',
 }
 
 export namespace SyncUserEnum {
