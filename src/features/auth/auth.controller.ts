@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -11,6 +12,7 @@ import { BaseUserDto } from 'src/core/dtos';
 import { UserIdDto } from 'src/core/dtos/user-id.dto';
 import { AuthService } from './auth.service';
 import { AuthDto, AuthResponseDto } from './dto/auth.dto';
+import { RegisterDto } from './dto/register.dto';
 import { RevokedTokensDto } from './dto/revoked-tokens.dto';
 
 @ApiTags('Authentication')
@@ -18,27 +20,27 @@ import { RevokedTokensDto } from './dto/revoked-tokens.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // @Public()
-  // @Post('register')
-  // @ApiOperation({ summary: 'User Registration' })
-  // @ApiNoContentResponse({
-  //   description: 'User registered successfully',
-  // })
-  // async signUp(
-  //   @Body() dto: RegisterDto,
-  //   @Req() req: FastifyRequest,
-  // ): Promise<void> {
-  //   const headers: Record<string, string> = req.headers as Record<
-  //     string,
-  //     string
-  //   >;
+  @Public()
+  @Post('register')
+  @ApiOperation({ summary: 'User Registration' })
+  @ApiNoContentResponse({
+    description: 'User registered successfully',
+  })
+  async signUp(
+    @Body() dto: RegisterDto,
+    @Req() req: FastifyRequest,
+  ): Promise<void> {
+    const headers: Record<string, string> = req.headers as Record<
+      string,
+      string
+    >;
 
-  //   headers['x-forwarded-for'] = req.ip;
-  //   headers['user-agent'] = req.headers['user-agent'] || '';
-  //   headers['accept-language'] = req.headers['accept-language'] || '';
+    headers['x-forwarded-for'] = req.ip;
+    headers['user-agent'] = req.headers['user-agent'] || '';
+    headers['accept-language'] = req.headers['accept-language'] || '';
 
-  //   await this.authService.signUp(dto, headers);
-  // }
+    await this.authService.signUp(dto, headers);
+  }
 
   @Public()
   @Post('login')
