@@ -60,7 +60,7 @@ export class SyncUserTool {
            */
           const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
           const filteredRows = rows
-            .slice(2)
+            .slice(1)
             .filter((row) =>
               (row as any)?.some((cell) => cell !== null && cell !== ''),
             );

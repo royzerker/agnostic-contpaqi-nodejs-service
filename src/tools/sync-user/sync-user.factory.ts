@@ -14,6 +14,7 @@ export class SyncUserFactory {
   create(type: SyncUserEnum) {
     switch (type) {
       case SyncUserEnum.BASE:
+      case SyncUserEnum.CONTPAQI:
         return this.#_moduleRef.get(SyncUserBaseStrategyService);
       default:
         throw new Error(`Unknown type: ${type}`);

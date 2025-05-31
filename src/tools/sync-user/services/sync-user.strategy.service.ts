@@ -31,6 +31,7 @@ export class SyncUserBaseStrategyService implements SyncUserService {
       try {
         await this.#_prismaClient.user.createMany({
           data: mappedUsers,
+          // skipDuplicates: true, // This will skip duplicates based on unique constraints
         });
 
         this.#_logger.log(`Successfully inserted ${mappedUsers.length} users`);
