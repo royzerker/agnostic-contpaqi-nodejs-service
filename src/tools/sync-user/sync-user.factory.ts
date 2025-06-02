@@ -12,8 +12,10 @@ export class SyncUserFactory {
   }
 
   create(type: SyncUserEnum) {
+    console.log(`Creating sync user strategy for type: ${type}`);
     switch (type) {
       case SyncUserEnum.BASE:
+        return this.#_moduleRef.get(SyncUserBaseStrategyService);
       case SyncUserEnum.CONTPAQI:
         return this.#_moduleRef.get(SyncUserBaseStrategyService);
       default:

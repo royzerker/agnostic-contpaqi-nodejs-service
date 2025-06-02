@@ -17,7 +17,7 @@ export class SyncUserTool {
   }
 
   async execute({ filePath }: SyncQueryDto): Promise<void> {
-    if (!filePath) {
+    if (!!filePath) {
       this.#_filePath = `${cwd?.()}/${filePath}`;
     }
 
