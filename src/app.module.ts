@@ -4,6 +4,7 @@ import { CoreModule } from './core/core.module';
 import { RolesGuard } from './core/guards/roles.guard';
 import { AuthStorageMiddleware } from './core/middlewares/auth-storage.middleware';
 import { AuthModule } from './features/auth/auth.module';
+import { ReportModule } from './features/report/report.module';
 import { UserModule } from './features/user/user.module';
 import { VideoModule } from './features/video/video.module';
 import { ConfigModule } from './modules/infrastructure/config/config.module';
@@ -27,6 +28,7 @@ import { SyncUserModule } from './tools/sync-user/sync-user.module';
     AuthModule,
     UserModule,
     SyncUserModule,
+    ReportModule,
   ],
   controllers: [],
   providers: [
